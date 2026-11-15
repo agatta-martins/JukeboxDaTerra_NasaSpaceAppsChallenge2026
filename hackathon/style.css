@@ -39,9 +39,8 @@ button{font:inherit;color:inherit}
 .brand svg{flex:none;color:var(--accent)}
 .nav{display:flex;flex-direction:column;gap:2px;list-style:none;margin:0;padding:0}
 .nav a{display:block;padding:8px 10px;border-radius:6px;text-decoration:none;color:var(--muted);font-weight:500}
-.nav a:hover{background:var(--surface-2);color:var(--fg)}
+.nav a:hover,.nav a[aria-current="page"]{background:var(--surface-2);color:var(--fg)}
 .small{font-size:12.5px;color:var(--muted);line-height:1.45}
-.proto{border-top:1px solid var(--line);padding-top:14px}
 
 .main{min-width:0}
 .hero{padding-block:8px 28px;max-width:62ch}
@@ -69,8 +68,11 @@ button{font:inherit;color:inherit}
 .pv:hover{background:rgba(0,0,0,.82);border-color:var(--accent)}
 .pv[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 
-.how{margin-top:56px;max-width:78ch}
-.how h2{font:700 24px/1.2 var(--font-display);margin:0 0 8px}
+.notice{margin:0 0 22px;padding:12px 14px;border:1px solid var(--accent);border-radius:8px;background:var(--surface);font-size:14px;max-width:62ch}
+.notice code{background:var(--surface-2);padding:1px 6px;border-radius:4px;font-size:13px}
+.credit{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:10px;z-index:2;max-width:calc(100% - 24px);padding:3px 9px;border-radius:4px;background:rgba(0,0,0,.62);color:#d7e0e8;font-size:12px;pointer-events:none}
+.how{max-width:78ch;padding-top:8px}
+.how h1{font:700 clamp(28px,4.2vw,42px)/1.08 var(--font-display);margin:0 0 12px;text-wrap:balance}
 .how p{color:var(--muted);margin:0 0 18px}
 .tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
 .tbl table{border-collapse:collapse;width:100%;min-width:460px}

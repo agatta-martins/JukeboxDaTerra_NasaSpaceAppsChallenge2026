@@ -21,16 +21,15 @@
         <li><a href="#inicio">Início</a></li>
         <li><a href="#como-funciona">Como funciona</a></li>
       </ul>
-      <div class="proto">
-        <p class="small"><strong>Protótipo.</strong> As cinco imagens abaixo são exemplos gerados no navegador, só para testar o som. Troque pelas imagens reais do Earth.gov antes da entrega.</p>
-      </div>
     </div>
   </aside>
   <main class="main">
+    <div id="page-inicio">
     <header class="hero">
       <h1>Escolha uma imagem da Terra e ouça o que ela mostra</h1>
       <p>Cada imagem é lida da esquerda para a direita. Cor, brilho e textura viram notas de uma escala musical.</p>
     </header>
+    <p class="notice" id="notice" role="alert" hidden>Não foi possível ler os pixels da imagem para tocar a prévia. Abra o site por um servidor local (por exemplo, <code>python -m http.server</code> dentro da pasta do projeto) em vez de abrir o arquivo com duplo clique.</p>
     <section class="carousel" id="carousel" aria-roledescription="carrossel" aria-label="Imagens da Terra">
       <div class="viewport"><div class="track" id="grid"></div></div>
       <nav class="pager" id="pager" aria-label="Navegar pelos cards">
@@ -39,8 +38,10 @@
         <button class="pg" id="next" type="button" aria-label="Próximos cards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </nav>
     </section>
-    <section class="how" id="como-funciona">
-      <h2>Como a imagem vira som</h2>
+    </div>
+    <div id="page-como" hidden>
+    <section class="how">
+      <h1>Como a imagem vira som</h1>
       <p>A imagem é dividida em 48 colunas. Cada coluna toca uma nota, e a mesma lista de notas alimenta o áudio, a linha dourada sobre a imagem e o piano roll. As notas são presas a uma escala para soar como música e não como ruído.</p>
       <div class="tbl">
         <table>
@@ -58,6 +59,7 @@
         </table>
       </div>
     </section>
+    </div>
   </main>
 </div>
 
@@ -65,6 +67,7 @@
   <div class="imgwrap" id="imgwrap">
     <canvas id="img" role="img" aria-label=""></canvas>
     <canvas id="fx" aria-hidden="true"></canvas>
+    <span class="credit" id="c-credit" hidden></span>
     <div class="top">
       <a class="back" href="#inicio"><span aria-hidden="true">←</span> Voltar</a>
       <div class="ttl">

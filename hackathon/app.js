@@ -32,161 +32,72 @@
   var fmt = function (s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   var live = function (t) { $('live').textContent = ''; setTimeout(function () { $('live').textContent = t; }, 40); };
 
-  /* ====== Ruído para gerar imagens de exemplo ====== */
-  function hash2(x, y, s) {
-    var h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(s, 982451653)) | 0;
-    h = Math.imul(h ^ (h >>> 13), 1274126177);
-    h ^= h >>> 16;
-    return (h >>> 0) / 4294967296;
-  }
-  function vnoise(x, y, s) {
-    var xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
-    var u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
-    var a = hash2(xi, yi, s), b = hash2(xi + 1, yi, s), c = hash2(xi, yi + 1, s), d = hash2(xi + 1, yi + 1, s);
-    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
-  }
-  function fbm(x, y, s, o) {
-    o = o || 5;
-    var v = 0, a = 0.5, f = 1;
-    for (var i = 0; i < o; i++) { v += a * vnoise(x * f, y * f, s + i * 17); f *= 2; a *= 0.5; }
-    return v / 0.97;
-  }
-
-  /* ====== Geradores das cinco imagens de exemplo ====== */
-  function genAgri(nx, ny) {
-    var s = 0.115, cx = Math.floor(nx / s), cy = Math.floor(ny / s);
-    var fx = nx / s - cx - 0.5, fy = ny / s - cy - 0.5, r = Math.sqrt(fx * fx + fy * fy);
-    var h = hash2(cx, cy, 3), h2 = hash2(cx, cy, 9);
-    var n = fbm(nx * 6, ny * 6, 5, 3);
-    var grain = (vnoise(nx * 90, ny * 90, 7) - 0.5) * 16;
-    var c = mixc([150, 128, 92], [196, 174, 124], n);
-    if (h2 > 0.8) c = mixc([128, 112, 74], [70, 100, 50], h);
-    if (r < 0.46 && h > 0.16) {
-      var greens = [[26, 88, 32], [44, 112, 38], [72, 136, 48], [150, 160, 66], [204, 186, 98]];
-      var base = greens[Math.floor(h * h * 4.99)];
-      var rings = 0.5 + 0.5 * Math.sin(r * 70 + h * 10);
-      var k = 0.9 + 0.12 * rings - 0.25 * sstep(0.38, 0.46, r);
-      c = [base[0] * k, base[1] * k, base[2] * k];
-    }
-    return [c[0] + grain, c[1] + grain, c[2] + grain];
-  }
-
-  var AIR_SRC = [[0.25, 0.8], [0.55, 0.92], [0.82, 0.72], [1.1, 0.96], [1.38, 0.82], [0.08, 0.55]];
-  function genAir(nx, ny) {
-    var t = fbm(nx * 3.2 + 4, ny * 3.2, 11, 5);
-    var c = mixc([22, 48, 38], [76, 96, 62], t);
-    var lk = fbm(nx * 2, ny * 2, 21, 4);
-    if (lk < 0.34) c = mixc([20, 42, 60], [34, 64, 84], lk * 3);
-    var d = 0, i;
-    for (i = 0; i < AIR_SRC.length; i++) {
-      var s = AIR_SRC[i], rx = nx - s[0], ry = ny - s[1];
-      var along = rx * 0.82 + ry * -0.57;
-      if (along < 0) continue;
-      var perp = -rx * -0.57 + ry * 0.82;
-      var w = 0.02 + along * 0.12;
-      var turb = fbm(nx * 7 + s[0] * 5, ny * 7, 31, 4);
-      d += Math.exp(-(perp * perp) / (w * w)) * Math.exp(-along * 0.9) * (0.5 + turb);
-    }
-    d = clamp(d * 1.3);
-    c = mixc(c, [214, 208, 200], d * 0.9);
-    var cl = sstep(0.58, 0.82, fbm(nx * 4 + 9, ny * 4, 41, 5));
-    return mixc(c, [240, 243, 246], cl * 0.85);
-  }
-
-  function genBio(nx, ny) {
-    var n = fbm(nx * 3.5, ny * 3.5, 51, 5);
-    var lake = Math.sqrt(Math.pow((nx - 1.05) * 0.9, 2) + Math.pow((ny - 0.28) * 1.3, 2));
-    var wob = (fbm(nx * 6, ny * 6, 61, 3) - 0.5) * 0.1;
-    var rv = Math.abs(fbm(nx * 2.2 + 3, ny * 2.2, 71, 4) - 0.5);
-    var water = n < 0.36 || lake < 0.26 + wob || rv < 0.012;
-    var m = fbm(nx * 9, ny * 9, 81, 4);
-    if (water) return mixc([14, 36, 62], [38, 76, 98], m);
-    var c = mixc([36, 88, 38], [112, 162, 72], m);
-    if (n < 0.44) c = mixc(c, [150, 150, 96], sstep(0.44, 0.36, n) * 0.7);
-    return c;
-  }
-
-  function genStorm(nx, ny) {
-    var cx = 0.8, cy = 0.5, dx = nx - cx, dy = ny - cy;
-    var r = Math.sqrt(dx * dx + dy * dy), th = Math.atan2(dy, dx);
-    var c = mixc([10, 38, 84], [24, 74, 124], fbm(nx * 4, ny * 4, 91, 4));
-    var ang = th + 7 * r;
-    var dens = fbm(Math.cos(ang) * r * 8 + 3, Math.sin(ang) * r * 8 + 3, 101, 5);
-    var mask = Math.exp(-r * r * 3.4);
-    var arms = 0.5 + 0.5 * Math.cos(3 * th - 14 * Math.log(r + 0.05));
-    var cloud = clamp((dens - 0.28) * 2.6) * mask * (0.55 + 0.45 * arms);
-    cloud += 0.5 * sstep(0.16, 0.07, r) * mask;
-    if (r < 0.035) cloud *= r / 0.035;
-    cloud = clamp(cloud);
-    var tone = mixc([196, 208, 224], [248, 249, 252], dens);
-    return mixc(c, tone, cloud);
-  }
-
-  function genOcean(nx, ny) {
-    var wx = fbm(nx * 2.5, ny * 2.5, 111, 4), wy = fbm(nx * 2.5 + 7, ny * 2.5 + 3, 121, 4);
-    var v = fbm(nx * 3 + wx * 2.2, ny * 3 + wy * 2.2, 131, 5);
-    var stops = [[8, 20, 60], [10, 58, 110], [20, 128, 142], [92, 200, 150], [222, 236, 172]];
-    var p = clamp((v - 0.25) / 0.55) * (stops.length - 1);
-    var i = Math.min(stops.length - 2, Math.floor(p));
-    var c = mixc(stops[i], stops[i + 1], p - i);
-    var land = fbm(nx * 2 + 20, ny * 2, 141, 4);
-    if (land > 0.68 && nx < 0.7) c = mixc(c, [96, 84, 68], sstep(0.68, 0.72, land));
-    return c;
-  }
-
-  /* ====== Temas: imagem de exemplo + personalidade sonora ====== */
+  /* ====== Temas ======
+     Cada tema = um card. Campos:
+       id      endereço da página (#id), sem espaços nem acentos, único
+       nome    título do card
+       src     arquivo da imagem, dentro de img/
+       credito texto mostrado sobre a imagem e no card. Troque por 'NASA SVS · ID 00000'
+       crop    (opcional) [x, y, largura, altura] em frações de 0 a 1, para cortar legenda ou data da imagem
+       preset  escala, andamento (bpm) e eco do tema
+       desc    descrição da imagem (leitor de tela e botão "Descrição da imagem")
+       som     explicação do som deste tema */
   var ORDER = [
     {
-      id: 'agricultura', nome: 'Agricultura', gen: genAgri,
-      preset: { root: 50, scale: SC.majorPent, bpm: 96, reverb: 0.25 },
-      desc: 'Vista de satélite de campos irrigados por pivô central: dezenas de círculos em tons de verde e dourado sobre solo claro, com alguns campos quadrados em marrom.',
-      som: 'Escala pentatônica maior, ritmo animado. Os campos verdes soam como marimba; os dourados, como um timbre mais brilhante.'
+      id: 'aerossois', nome: 'Aerossóis',
+      src: 'img/geos.png', credito: 'NASA',
+      preset: { root: 45, scale: SC.minor, bpm: 100, reverb: 0.5 },
+      desc: 'Mapa-múndi sobre fundo escuro. Redemoinhos verde-neon se enrolam sobre os oceanos e a Ásia. Uma larga faixa lilás e branca cruza o Atlântico e o Norte da África, e manchas laranja e vermelhas aparecem na África central. As luzes das cidades pontilham a América do Norte e a Europa, e um redemoinho em espiral surge sobre o Atlântico.',
+      som: 'Escala menor natural, andamento rápido e muito eco. A melodia segue a região mais clara de cada trecho do mapa, como o verde-neon e a faixa lilás; os oceanos escuros ficam em segundo plano.'
     },
     {
-      id: 'qualidade-do-ar', nome: 'Qualidade do ar', gen: genAir,
-      preset: { root: 45, scale: SC.minorPent, bpm: 72, reverb: 0.55 },
-      desc: 'Colunas de fumaça cinza e branca sobem do canto inferior esquerdo e são levadas pelo vento para cima e para a direita, sobre florestas escuras e um lago, com nuvens finas por cima.',
-      som: 'Escala pentatônica menor, andamento lento e muito eco. A fumaça clara vira notas agudas; a mata escura, notas graves.'
-    },
-    {
-      id: 'biodiversidade', nome: 'Biodiversidade', gen: genBio,
-      preset: { root: 48, scale: SC.lydian, bpm: 84, reverb: 0.4 },
-      desc: 'Um delta de rio visto de cima: terra verde cortada por canais sinuosos, com um grande lago azul-escuro no alto à direita e áreas alagadas mais claras.',
-      som: 'Escala lídia, aberta e luminosa. A água escura pesa pouco; a vegetação clara acende as notas.'
-    },
-    {
-      id: 'furacao', nome: 'Desastres', gen: genStorm,
-      preset: { root: 43, scale: SC.minor, bpm: 110, reverb: 0.35 },
-      desc: 'Um furacão sobre o oceano: bandas de nuvens brancas em espiral ao redor de um olho escuro, sobre água azul-marinho.',
-      som: 'Escala menor natural, andamento mais rápido e tenso. A parede do olho, a região mais clara, chega nas notas mais agudas.'
-    },
-    {
-      id: 'oceano', nome: 'Oceanos', gen: genOcean,
+      id: 'oceano', nome: 'Cor do oceano',
+      src: 'img/ocean.jpg', credito: 'NASA', crop: [0, 0, 1, 0.885],
       preset: { root: 46, scale: SC.sus, bpm: 66, reverb: 0.6 },
-      desc: 'Redemoinhos de fitoplâncton no mar: filamentos turquesa e verde-claros se enrolam sobre azul profundo, com um pedaço de terra no canto esquerdo.',
-      som: 'Escala suspensa, lenta e espaçosa. As águas profundas ficam graves e suaves; os filamentos claros brilham no agudo.'
+      desc: 'Mapa-múndi com os continentes em cinza e o oceano pintado por uma escala que vai do azul-marinho ao amarelo. As águas profundas, no centro dos oceanos, são azul-escuras. As regiões costeiras e as próximas dos polos aparecem em verde e amarelo. A Antártida é uma mancha clara na parte de baixo.',
+      som: 'Escala suspensa, lenta e espaçosa. Os continentes claros e as faixas amarelas da costa puxam a melodia para cima; o oceano profundo, escuro, fica no grave. A legenda e a data da imagem original foram cortadas para não virarem notas.'
+    },
+    {
+      id: 'gelo-polar', nome: 'Gelo polar',
+      src: 'img/polar.jpg', credito: 'NASA',
+      preset: { root: 52, scale: SC.lydian, bpm: 62, reverb: 0.65 },
+      desc: 'Vista aérea de uma geleira. A superfície de gelo branco-azulada é cheia de rachaduras e ondulações que se curvam em arcos, cortada por faixas escuras de rocha e sedimento. Ao fundo, colinas marrons e um céu claro e esfumaçado.',
+      som: 'Escala lídia, lenta e cristalina, com bastante eco. A melodia sobe e desce acompanhando as ondulações do gelo e as faixas escuras de rocha.'
+    },
+    {
+      id: 'agricultura', nome: 'Agricultura',
+      src: 'img/agriculture.webp', credito: 'NASA',
+      preset: { root: 50, scale: SC.majorPent, bpm: 96, reverb: 0.25 },
+      desc: 'Vista de satélite de campos agrícolas. Dezenas de círculos verde-escuros, feitos pela irrigação em pivô central, se misturam a quadrados e retângulos em verde-claro, cinza e bege. A imagem é escura e muito larga.',
+      som: 'Escala pentatônica maior e ritmo animado. Os campos verdes soam como marimba, com notas curtas; os campos claros soam mais brilhantes.'
+    },
+    {
+      id: 'correntes-oceanicas', nome: 'Correntes oceânicas',
+      src: 'img/perpetualocean.jpg', credito: 'NASA',
+      preset: { root: 50, scale: SC.lydian, bpm: 70, reverb: 0.55 },
+      desc: 'A Terra vista do espaço, centrada nas Américas, sobre fundo preto. Os oceanos são azuis e cobertos por milhares de linhas brancas finas que mostram as correntes marítimas, com muitos redemoinhos. Uma faixa branca mais forte, a Corrente do Golfo, sai do Golfo do México e segue pelo Atlântico Norte. Os continentes aparecem em verde e marrom, e o Canadá está coberto de neve.',
+      som: 'Escala lídia, fluida e com bastante eco. As laterais pretas da imagem ficam quase em silêncio, e o som cresce quando a varredura entra no globo. As linhas brancas das correntes, mais claras, guiam a melodia.'
+    },
+    {
+      id: 'aurora', nome: 'Aurora',
+      src: 'img/aurora.jpg', credito: 'NASA',
+      preset: { root: 43, scale: SC.sus, bpm: 56, reverb: 0.7 },
+      desc: 'Céu noturno com uma grande faixa de luz verde da aurora atravessando a imagem na diagonal, sobre um fundo azul-escuro e preto cheio de estrelas. No chão aparecem neve, antenas, um poste e a lateral de um carro.',
+      som: 'Escala suspensa, bem lenta e com muito eco. A luz verde toca com notas curtas de marimba, e o céu escuro fica em silêncio relativo.'
     }
   ];
   var themes = {};
   ORDER.forEach(function (t) { themes[t.id] = t; });
 
-  var GEN_W = 640, GEN_H = 400;
+  var PLACEHOLDER = null;
   function getImage(t) {
     if (t.canvas) return t.canvas;
-    var cv = document.createElement('canvas');
-    cv.width = GEN_W; cv.height = GEN_H;
-    var cx = cv.getContext('2d');
-    var id = cx.createImageData(GEN_W, GEN_H), d = id.data, sc = 1 / GEN_H, x, y, o, c;
-    for (y = 0; y < GEN_H; y++) {
-      for (x = 0; x < GEN_W; x++) {
-        c = t.gen(x * sc, y * sc);
-        o = (y * GEN_W + x) * 4;
-        d[o] = c[0]; d[o + 1] = c[1]; d[o + 2] = c[2]; d[o + 3] = 255;
-      }
+    if (!PLACEHOLDER) {
+      PLACEHOLDER = document.createElement('canvas');
+      PLACEHOLDER.width = 640; PLACEHOLDER.height = 400;
+      var px = PLACEHOLDER.getContext('2d'); px.fillStyle = '#16212a'; px.fillRect(0, 0, 640, 400);
     }
-    cx.putImageData(id, 0, 0);
-    t.canvas = cv;
-    return cv;
+    return PLACEHOLDER;
   }
   function coverDraw(ctx, src, w, h) {
     var sw = src.naturalWidth || src.width, sh = src.naturalHeight || src.height;
@@ -237,9 +148,13 @@
 
     var len = preset.scale.length, notes = [], prev = null;
     cols.forEach(function (k, ci) {
+      var rest = k.lum < 0.04; // trecho quase preto (fundo do espaço): vira pausa, sem nota
       var step = ROWS - 1 - k.band;
-      if (prev !== null && Math.abs(step - prev) > 5) step = prev + (step > prev ? 5 : -5);
-      prev = step;
+      if (rest) step = prev !== null ? prev : Math.floor(ROWS / 2);
+      else {
+        if (prev !== null && Math.abs(step - prev) > 5) step = prev + (step > prev ? 5 : -5);
+        prev = step;
+      }
       var vel = lmax - lmin < 0.02 ? 0.7 : 0.3 + 0.7 * (k.lum - lmin) / (lmax - lmin);
       var edgeN = emax - emin < 1e-4 ? 0 : (k.edge - emin) / (emax - emin);
       var warm = clamp((k.r - k.b) / 90, -1, 1);
@@ -249,7 +164,7 @@
       notes.push({
         col: ci, t: ci * BPC, step: step, midi: toMidi(step),
         hstep: edgeN > 0.6 ? hs : null, hmidi: (edgeN > 0.6 && hs !== null) ? toMidi(hs) : null,
-        vel: vel, kind: kind, warm: warm,
+        vel: vel, kind: kind, warm: warm, rest: rest,
         dur: kind === 'pluck' ? 0.7 : (kind === 'soft' ? 1.4 : 1.0),
         cut: 700 + 3200 * clamp(0.35 + 0.5 * warm + 0.4 * vel, 0.1, 1),
         rgb: [Math.round(mix(Math.max(k.r, 40), 255, 0.25)), Math.round(mix(Math.max(k.g, 40), 255, 0.25)), Math.round(mix(Math.max(k.b, 40), 255, 0.25))]
@@ -324,7 +239,7 @@
     o1.connect(padF); o2.connect(padF); padF.connect(padG); padG.connect(bus.input);
     var endT = t0 + (toBeat - fromBeat) * spb;
     notes.forEach(function (n) {
-      if (n.t < fromBeat - 1e-6 || n.t >= toBeat) return;
+      if (n.rest || n.t < fromBeat - 1e-6 || n.t >= toBeat) return;
       var when = t0 + (n.t - fromBeat) * spb, dur = n.dur * spb;
       var pan = -0.85 + 1.7 * n.col / (N - 1);
       voice(when, n.midi, dur, n.vel, n.kind, pan, n.cut);
@@ -338,6 +253,33 @@
 
   /* ====== Home: cards ====== */
   var grid = $('grid');
+  /* Carrega a imagem do campo src (e aplica o recorte, se houver). */
+  function loadReal(t) {
+    var im = new Image();
+    im.onload = function () {
+      var src = im;
+      if (t.crop) {
+        var sw = im.naturalWidth, sh = im.naturalHeight;
+        var cw = Math.round(sw * t.crop[2]), ch = Math.round(sh * t.crop[3]);
+        src = document.createElement('canvas'); src.width = cw; src.height = ch;
+        src.getContext('2d').drawImage(im, Math.round(sw * t.crop[0]), Math.round(sh * t.crop[1]), cw, ch, 0, 0, cw, ch);
+      }
+      t.canvas = src; t.real = true; t.pvNotes = null;
+      var p = t.el && t.el.querySelector('.lab p');
+      if (p) p.textContent = t.credito || 'NASA';
+      drawThumb(t);
+      if (cur.theme === t && !viewCard.hidden) { layoutCard(); updateCredit(); }
+    };
+    im.onerror = function () {
+      console.error('Imagem não encontrada: ' + t.src + '. Confira o nome do arquivo na pasta img/.');
+      var p = t.el && t.el.querySelector('.lab p');
+      if (p) p.textContent = 'Imagem não encontrada';
+    };
+    im.src = t.src;
+  }
+  function safeAnalyze(img, aspect, preset) {
+    try { return analyze(img, aspect, preset); } catch (e) { console.error(e); return null; }
+  }
   function drawThumb(t) {
     var cv = t.el && t.el.querySelector('canvas');
     if (!cv) return;
@@ -355,7 +297,7 @@
       '<div class="lab"><h3></h3><p></p></div>' +
       '<a class="card-link" href="#"></a>';
     el.querySelector('h3').textContent = t.nome;
-    el.querySelector('.lab p').textContent = 'Imagem de exemplo';
+    el.querySelector('.lab p').textContent = 'Carregando imagem…';
     var a = el.querySelector('.card-link');
     a.setAttribute('href', '#' + t.id);
     a.setAttribute('aria-label', 'Abrir ' + t.nome);
@@ -379,9 +321,10 @@
   function togglePreview(t) {
     if (previewId === t.id) { stopAudio(); return; }
     haltPlayer();
+    if (!t.real) return;
+    if (!t.pvNotes) t.pvNotes = safeAnalyze(getImage(t), 3 / 4, t.preset);
+    if (!t.pvNotes) { $('notice').hidden = false; return; }
     startBus(t.preset);
-    var img = getImage(t);
-    if (!t.pvNotes) t.pvNotes = analyze(img, 3 / 4, t.preset);
     schedule(t.pvNotes, t.preset, 0, PREV_BEATS, 1, ac.currentTime + 0.05);
     previewId = t.id;
     setPreviewUI();
@@ -433,7 +376,7 @@
   (function stagger(i) {
     var t = ORDER[i];
     if (!t) return;
-    getImage(t); drawThumb(t);
+    loadReal(t);
     setTimeout(function () { stagger(i + 1); }, 16);
   })(0);
 
@@ -458,6 +401,7 @@
     if (P.playing) { P.pos = currentBeat(); P.playing = false; cancelAnimationFrame(P.raf); stopAudio(); setPlayUI(); }
   }
   function playFrom(beat) {
+    if (!cur.notes.length) return;
     ensureAudio();
     var th = cur.theme;
     startBus(th.preset);
@@ -495,6 +439,7 @@
   }
 
   function describeNote(n) {
+    if (n.rest) return 'Pausa · trecho preto da imagem, sem nota';
     var b = n.vel < 0.5 ? 'trecho escuro' : (n.vel < 0.78 ? 'luminosidade média' : 'trecho claro');
     var k = n.kind === 'pluck' ? 'verde, som de marimba' : (n.kind === 'bright' ? 'tons quentes, som brilhante' : 'tons frios, som suave');
     var p = n.step < 5 ? 'nota grave' : (n.step < 10 ? 'nota média' : 'nota aguda');
@@ -505,6 +450,7 @@
     if (col === P.lastCol) return;
     P.lastCol = col;
     var el = $('caption');
+    if (cur.error) { el.textContent = 'Não foi possível ler os pixels desta imagem. Abra o site por um servidor local (python -m http.server na pasta do projeto) em vez de abrir o arquivo com duplo clique.'; return; }
     if (!P.playing && beat <= 0) el.textContent = 'Toque ▶ para ouvir. A linha dourada percorre a imagem e cada ponto é uma nota.';
     else if (col >= N) el.textContent = 'Fim da imagem.';
     else el.textContent = describeNote(cur.notes[col]);
@@ -523,7 +469,7 @@
         ctx.beginPath();
         for (i = 0; i <= col; i++) {
           n = notes[i]; px = (i + 0.5) / N * W; py = ((ROWS - 1 - n.step) + 0.5) / ROWS * H;
-          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          if (i === 0 || n.rest || notes[i - 1].rest) ctx.moveTo(px, py); else ctx.lineTo(px, py);
         }
         ctx.lineWidth = w; ctx.strokeStyle = color; ctx.lineJoin = 'round'; ctx.stroke();
       };
@@ -531,6 +477,7 @@
       pass(2, 'rgba(255,211,110,.95)');
       for (i = 0; i <= col; i++) {
         n = notes[i]; px = (i + 0.5) / N * W; py = ((ROWS - 1 - n.step) + 0.5) / ROWS * H;
+        if (n.rest) continue;
         ctx.beginPath(); ctx.arc(px, py, 3.2, 0, 6.2832); ctx.fillStyle = '#ffd36e'; ctx.fill();
       }
     }
@@ -538,7 +485,7 @@
     gr.addColorStop(0, 'rgba(255,211,110,0)'); gr.addColorStop(1, 'rgba(255,211,110,.26)');
     ctx.fillStyle = gr; ctx.fillRect(x - 90, 0, 90, H);
     ctx.fillStyle = '#ffd36e'; ctx.fillRect(x - 1, 0, 2, H);
-    if (beat > 0 && beat < TOTAL && notes[col]) {
+    if (beat > 0 && beat < TOTAL && notes[col] && !notes[col].rest) {
       n = notes[col]; px = (col + 0.5) / N * W; py = ((ROWS - 1 - n.step) + 0.5) / ROWS * H;
       ctx.beginPath(); ctx.arc(px, py, 10, 0, 6.2832); ctx.lineWidth = 2.5; ctx.strokeStyle = '#ffd36e'; ctx.stroke();
       ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832); ctx.fillStyle = '#fff'; ctx.fill();
@@ -579,6 +526,7 @@
     };
     for (i = 0; i < cur.notes.length; i++) {
       n = cur.notes[i];
+      if (n.rest) continue;
       if (n.hstep !== null) drawNote(n, n.hstep, 0.6, 1.5);
       drawNote(n, n.step, 1, 0);
     }
@@ -604,12 +552,19 @@
     var cx = imgCv.getContext('2d');
     cx.imageSmoothingQuality = 'high';
     coverDraw(cx, getImage(t), imgCv.width, imgCv.height);
-    cur.notes = analyze(getImage(t), w / h, t.preset);
+    var notes = safeAnalyze(getImage(t), w / h, t.preset);
+    cur.error = !notes;
+    cur.notes = notes || [];
     sizeCanvas(rollCv, rollCv.clientWidth, rollCv.clientHeight);
     P.lastCol = -2;
     drawAll(currentBeat());
   }
 
+  function updateCredit() {
+    var t = cur.theme, el = $('c-credit'), on = !!(t && t.real && t.credito);
+    el.textContent = on ? 'Imagem: ' + t.credito : '';
+    el.hidden = !on;
+  }
   function openCard(t) {
     stopAudio(); haltPlayer();
     cur.theme = t; P.pos = 0; P.lastCol = -2;
@@ -618,6 +573,7 @@
     $('c-desc').textContent = t.desc;
     $('c-sound').textContent = t.som;
     imgCv.setAttribute('aria-label', t.desc);
+    updateCredit();
     document.title = t.nome + ' · Jukebox da Terra';
     setPlayUI();
     layoutCard();
@@ -634,7 +590,15 @@
     var h = decodeURIComponent((location.hash || '').slice(1)) || 'inicio';
     if (themes[h]) { openCard(themes[h]); return; }
     showHome();
-    if (h === 'como-funciona') { var s = $('como-funciona'); if (s) s.scrollIntoView(); } else if (h === 'inicio') { window.scrollTo(0, 0); }
+    var how = h === 'como-funciona';
+    $('page-inicio').hidden = how;
+    $('page-como').hidden = !how;
+    document.querySelectorAll('.nav a').forEach(function (a) {
+      if (a.getAttribute('href') === (how ? '#como-funciona' : '#inicio')) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    if (how) document.title = 'Como funciona · Jukebox da Terra';
+    window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
 
