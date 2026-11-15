@@ -45,42 +45,42 @@
   var ORDER = [
     {
       id: 'aerossois', nome: 'Aerossóis',
-      src: 'img/geos.png', credito: 'NASA',
+      src: 'img/geos.png', credito: 'NASA https://svs.gsfc.nasa.gov/5669/',
       preset: { root: 45, scale: SC.minor, bpm: 100, reverb: 0.5 },
       desc: 'Mapa-múndi sobre fundo escuro. Redemoinhos verde-neon se enrolam sobre os oceanos e a Ásia. Uma larga faixa lilás e branca cruza o Atlântico e o Norte da África, e manchas laranja e vermelhas aparecem na África central. As luzes das cidades pontilham a América do Norte e a Europa, e um redemoinho em espiral surge sobre o Atlântico.',
       som: 'Escala menor natural, andamento rápido e muito eco. A melodia segue a região mais clara de cada trecho do mapa, como o verde-neon e a faixa lilás; os oceanos escuros ficam em segundo plano.'
     },
     {
       id: 'oceano', nome: 'Cor do oceano',
-      src: 'img/ocean.jpg', credito: 'NASA', crop: [0, 0, 1, 0.885],
+      src: 'img/ocean.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/5690/', crop: [0, 0, 1, 0.885],
       preset: { root: 46, scale: SC.sus, bpm: 66, reverb: 0.6 },
       desc: 'Mapa-múndi com os continentes em cinza e o oceano pintado por uma escala que vai do azul-marinho ao amarelo. As águas profundas, no centro dos oceanos, são azul-escuras. As regiões costeiras e as próximas dos polos aparecem em verde e amarelo. A Antártida é uma mancha clara na parte de baixo.',
       som: 'Escala suspensa, lenta e espaçosa. Os continentes claros e as faixas amarelas da costa puxam a melodia para cima; o oceano profundo, escuro, fica no grave. A legenda e a data da imagem original foram cortadas para não virarem notas.'
     },
     {
       id: 'gelo-polar', nome: 'Gelo polar',
-      src: 'img/polar.jpg', credito: 'NASA',
+      src: 'img/polar.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/13577/',
       preset: { root: 52, scale: SC.lydian, bpm: 62, reverb: 0.65 },
       desc: 'Vista aérea de uma geleira. A superfície de gelo branco-azulada é cheia de rachaduras e ondulações que se curvam em arcos, cortada por faixas escuras de rocha e sedimento. Ao fundo, colinas marrons e um céu claro e esfumaçado.',
       som: 'Escala lídia, lenta e cristalina, com bastante eco. A melodia sobe e desce acompanhando as ondulações do gelo e as faixas escuras de rocha.'
     },
     {
       id: 'agricultura', nome: 'Agricultura',
-      src: 'img/agriculture.webp', credito: 'NASA',
+      src: 'img/agriculture.webp', credito: 'NASA https://earth.gov/themes/agriculture',
       preset: { root: 50, scale: SC.majorPent, bpm: 96, reverb: 0.25 },
       desc: 'Vista de satélite de campos agrícolas. Dezenas de círculos verde-escuros, feitos pela irrigação em pivô central, se misturam a quadrados e retângulos em verde-claro, cinza e bege. A imagem é escura e muito larga.',
       som: 'Escala pentatônica maior e ritmo animado. Os campos verdes soam como marimba, com notas curtas; os campos claros soam mais brilhantes.'
     },
     {
       id: 'correntes-oceanicas', nome: 'Correntes oceânicas',
-      src: 'img/perpetualocean.jpg', credito: 'NASA',
+      src: 'img/perpetualocean.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/5425/',
       preset: { root: 50, scale: SC.lydian, bpm: 70, reverb: 0.55 },
       desc: 'A Terra vista do espaço, centrada nas Américas, sobre fundo preto. Os oceanos são azuis e cobertos por milhares de linhas brancas finas que mostram as correntes marítimas, com muitos redemoinhos. Uma faixa branca mais forte, a Corrente do Golfo, sai do Golfo do México e segue pelo Atlântico Norte. Os continentes aparecem em verde e marrom, e o Canadá está coberto de neve.',
       som: 'Escala lídia, fluida e com bastante eco. As laterais pretas da imagem ficam quase em silêncio, e o som cresce quando a varredura entra no globo. As linhas brancas das correntes, mais claras, guiam a melodia.'
     },
     {
       id: 'aurora', nome: 'Aurora',
-      src: 'img/aurora.jpg', credito: 'NASA',
+      src: 'img/aurora.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/12523/',
       preset: { root: 43, scale: SC.sus, bpm: 56, reverb: 0.7 },
       desc: 'Céu noturno com uma grande faixa de luz verde da aurora atravessando a imagem na diagonal, sobre um fundo azul-escuro e preto cheio de estrelas. No chão aparecem neve, antenas, um poste e a lateral de um carro.',
       som: 'Escala suspensa, bem lenta e com muito eco. A luz verde toca com notas curtas de marimba, e o céu escuro fica em silêncio relativo.'
