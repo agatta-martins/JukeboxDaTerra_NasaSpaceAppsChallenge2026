@@ -301,6 +301,7 @@
     var a = el.querySelector('.card-link');
     a.setAttribute('href', '#' + t.id);
     a.setAttribute('aria-label', 'Open ' + t.name);
+    a.setAttribute('data-voz', t.name + '. Open image and listen.');
     a.addEventListener('click', function () { autoplayNext = true; ensureAudio(); });
     var pv = el.querySelector('.pv');
     pv.setAttribute('aria-label', 'Play preview: ' + t.name);
@@ -353,7 +354,7 @@
     $('next').disabled = cs.page === cs.pages - 1;
     $('pager').hidden = cs.pages <= 1;
   }
-  function goPage(d) { cs.page += d; renderCarousel(); }
+  function goPage(d) { cs.page += d; renderCarousel(); speak('Page ' + (cs.page + 1) + ' of ' + cs.pages + '.'); }
   $('prev').addEventListener('click', function () { goPage(-1); });
   $('next').addEventListener('click', function () { goPage(1); });
   (function () {
@@ -566,6 +567,7 @@
     el.hidden = !on;
   }
   function openCard(t) {
+    if (vox.ok) speechSynthesis.cancel();
     stopAudio(); haltPlayer();
     cur.theme = t; P.pos = 0; P.lastCol = -2;
     viewHome.hidden = true; viewCard.hidden = false;
@@ -634,6 +636,92 @@
     }).observe(imgwrap);
   }
   window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (!viewCard.hidden) layoutCard(); }, 120); });
+
+  /* ====== Voice narration (Web Speech API, built into the browser) ======
+     On mouse hover or keyboard focus (Tab) over a link or button, the site speaks its name.
+     To make any other element speak, just give it data-voz="text".
+     data-voz-always makes an element speak even when narration is off. */
+  var vox = { ok: 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window, on: true, voice: null, timer: 0, last: null, primed: false };
+  try { if (localStorage.getItem('narration') === 'off') vox.on = false; } catch (e) {}
+  function pickVoice() {
+    var vs = speechSynthesis.getVoices(), i;
+    vox.voice = null;
+    for (i = 0; i < vs.length; i++) { if (/^en[-_]US/i.test(vs[i].lang)) { vox.voice = vs[i]; return; } }
+    for (i = 0; i < vs.length; i++) { if (/^en/i.test(vs[i].lang)) { vox.voice = vs[i]; return; } }
+  }
+  if (vox.ok) {
+    pickVoice();
+    if (speechSynthesis.addEventListener) speechSynthesis.addEventListener('voiceschanged', pickVoice);
+  }
+  function speak(text, force) {
+    if (!vox.ok || !text || (!vox.on && !force)) return;
+    speechSynthesis.cancel();
+    (text.match(/.*?[.!?](?=\s|$)|.+$/g) || [text]).forEach(function (sentence) {
+      var s = sentence.trim();
+      if (!s) return;
+      var u = new SpeechSynthesisUtterance(s);
+      u.lang = 'en-US';
+      if (vox.voice) u.voice = vox.voice;
+      speechSynthesis.speak(u);
+    });
+  }
+  function textOf(el) {
+    return el.getAttribute('data-voz') || el.getAttribute('aria-label') || (el.textContent || '').replace(/\s+/g, ' ').trim();
+  }
+  var TARGET = 'a, button, summary, label, [data-voz]';
+  function targetOf(n) { return n && n.closest ? n.closest(TARGET) : null; }
+  function speakElement(el) { speak(textOf(el), el.hasAttribute('data-voz-always')); }
+
+  document.addEventListener('mouseover', function (e) {
+    var el = targetOf(e.target);
+    if (el === vox.last) return;
+    vox.last = el;
+    clearTimeout(vox.timer);
+    if (el) vox.timer = setTimeout(function () { speakElement(el); }, 150);
+  });
+  document.addEventListener('focusin', function (e) {
+    var el = targetOf(e.target), keyboard = true;
+    if (!el) return;
+    try { keyboard = e.target.matches(':focus-visible'); } catch (err) {}
+    if (keyboard) speakElement(el);
+  });
+  /* Some browsers only allow speech after the first click or key press. */
+  function primeVoice() {
+    if (vox.primed || !vox.ok) return;
+    vox.primed = true;
+    var u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
+  document.addEventListener('pointerdown', primeVoice, true);
+  document.addEventListener('keydown', primeVoice, true);
+
+  function updateVox() {
+    var b = $('voz');
+    b.setAttribute('aria-pressed', vox.on ? 'true' : 'false');
+    $('voz-txt').textContent = vox.on ? 'Narration: on' : 'Narration: off';
+    b.setAttribute('data-voz', vox.on ? 'Narration on. Click to turn off.' : 'Narration off. Click to turn on.');
+  }
+  if (!vox.ok) $('voz-box').hidden = true;
+  updateVox();
+  $('voz').addEventListener('click', function () {
+    vox.on = !vox.on;
+    try { localStorage.setItem('narration', vox.on ? 'on' : 'off'); } catch (e) {}
+    updateVox();
+    speak(vox.on ? 'Narration on.' : 'Narration off.', true);
+  });
+
+  /* "Image description": opening it pauses the image music and reads the description aloud.
+     Closing it stops the reading. Hovering only speaks the button name. */
+  document.querySelector('.desc').addEventListener('toggle', function () {
+    var t = cur.theme;
+    if (this.open && t) {
+      haltPlayer();
+      speak(t.name + '. ' + t.desc + ' ' + t.sound, true);
+    } else if (vox.ok) {
+      speechSynthesis.cancel();
+    }
+  });
 
   setPlayUI();
   route();

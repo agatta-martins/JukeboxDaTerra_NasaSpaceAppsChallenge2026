@@ -13,7 +13,7 @@
 <div id="view-home" class="shell">
   <aside class="side">
     <div class="side-in">
-      <a class="brand" href="#home">
+      <a class="brand" href="#home" data-voz="Earth Jukebox. Home page.">
         <svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="2"/><path d="M4 17c3-5 5 5 8 0s5 5 8 0 5 5 8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <span>Earth<br>Jukebox</span>
       </a>
@@ -21,6 +21,13 @@
         <li><a href="#home">Home</a></li>
         <li><a href="#how-it-works">How it works</a></li>
       </ul>
+      <div class="voz-box" id="voz-box">
+        <button class="voz-btn" id="voz" type="button" aria-pressed="true" data-voz-always>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5H4z" fill="currentColor"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.6 7.6 0 0 1 0 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span id="voz-txt">Narration: on</span>
+        </button>
+        <p class="small">Hover the mouse or press Tab over any item to hear its name.</p>
+      </div>
     </div>
   </aside>
   <main class="main">
@@ -69,7 +76,7 @@
     <canvas id="fx" aria-hidden="true"></canvas>
     <span class="credit" id="c-credit" hidden></span>
     <div class="top">
-      <a class="back" href="#home"><span aria-hidden="true">←</span> Back</a>
+      <a class="back" href="#home" data-voz="Back to the home page"><span aria-hidden="true">←</span> Back</a>
       <div class="ttl">
         <span class="chip"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M1.8 8h12.4M8 1.8c2 2 2 10.4 0 12.4M8 1.8c-2 2-2 10.4 0 12.4" stroke="currentColor" stroke-width="1.1"/></svg>Earth theme</span>
         <h2 id="c-title"></h2>
@@ -82,14 +89,14 @@
   </div>
   <div class="panel">
     <div class="caption"><b>Now</b><span id="caption"></span></div>
-    <canvas id="roll" role="img" aria-label="Piano roll. Each bar is a note being played. Click to jump to a point in the music."></canvas>
+    <canvas id="roll" data-voz="Piano roll. Each bar is a note. Click to jump to a point in the music." role="img" aria-label="Piano roll. Each bar is a note being played. Click to jump to a point in the music."></canvas>
     <div class="controls">
       <button class="play" id="play" type="button" aria-label="Play"></button>
       <div class="grp" role="group" aria-label="Speed">
         <span class="lbl" aria-hidden="true">Speed</span>
-        <button class="seg" type="button" data-speed="0.6" aria-pressed="false">0.6×</button>
-        <button class="seg" type="button" data-speed="1" aria-pressed="true">1×</button>
-        <button class="seg" type="button" data-speed="1.5" aria-pressed="false">1.5×</button>
+        <button class="seg" type="button" data-speed="0.6" aria-pressed="false" data-voz="Speed 0.6 times">0.6×</button>
+        <button class="seg" type="button" data-speed="1" aria-pressed="true" data-voz="Normal speed">1×</button>
+        <button class="seg" type="button" data-speed="1.5" aria-pressed="false" data-voz="Speed 1.5 times">1.5×</button>
       </div>
       <label class="tog"><input type="checkbox" id="loop"> Loop</label>
       <span class="time" id="time" aria-hidden="true">0:00 / 0:00</span>
