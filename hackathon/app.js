@@ -55,7 +55,7 @@
       src: 'img/ocean.jpg', credit: 'NASA https://svs.gsfc.nasa.gov/5690/', crop: [0, 0, 1, 0.885],
       preset: { root: 46, scale: SC.sus, bpm: 66, reverb: 0.6 },
       desc: 'World map with the continents in gray and the ocean painted on a scale that runs from navy blue to yellow. Deep waters, in the middle of the oceans, are dark blue. Coastal regions and areas near the poles appear in green and yellow. Antarctica is a light patch at the bottom.',
-      sound: 'Suspended scale, slow and spacious. The light continents and the yellow coastal bands pull the melody up; the dark deep ocean stays low. The legend and date of the original image were cropped out so they would not turn into notes.'
+      sound: 'Suspended scale, slow and spacious. The gray continents and the yellow coastal bands pull the melody up; the dark deep ocean stays low. The legend and date of the original image were cropped out so they would not turn into notes.'
     },
     {
       id: 'polar-ice', name: 'Polar ice',
