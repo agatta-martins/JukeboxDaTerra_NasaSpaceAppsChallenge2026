@@ -1,14 +1,14 @@
 (function () {
   'use strict';
-  document.documentElement.lang = 'pt-BR';
+  document.documentElement.lang = 'en';
 
-  /* ====== Constantes ====== */
-  var ROWS = 15;            // linhas do piano roll = degraus da escala
-  var N = 48;               // colunas da imagem = notas
-  var BPC = 0.5;            // batidas por coluna
-  var TOTAL = N * BPC;      // duração em batidas
-  var TAIL = 1.6;           // cauda depois da última nota
-  var PREV_BEATS = 6;       // prévia nos cards: 12 colunas
+  /* ====== Constants ====== */
+  var ROWS = 15;            // piano roll rows = scale steps
+  var N = 48;               // image columns = notes
+  var BPC = 0.5;            // beats per column
+  var TOTAL = N * BPC;      // length in beats
+  var TAIL = 1.6;           // tail after the last note
+  var PREV_BEATS = 6;       // card preview: 12 columns
   var NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   var ICON_PLAY = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg>';
   var ICON_PAUSE = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>';
@@ -32,58 +32,58 @@
   var fmt = function (s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   var live = function (t) { $('live').textContent = ''; setTimeout(function () { $('live').textContent = t; }, 40); };
 
-  /* ====== Temas ======
-     Cada tema = um card. Campos:
-       id      endereço da página (#id), sem espaços nem acentos, único
-       nome    título do card
-       src     arquivo da imagem, dentro de img/
-       credito texto mostrado sobre a imagem e no card. Troque por 'NASA SVS · ID 00000'
-       crop    (opcional) [x, y, largura, altura] em frações de 0 a 1, para cortar legenda ou data da imagem
-       preset  escala, andamento (bpm) e eco do tema
-       desc    descrição da imagem (leitor de tela e botão "Descrição da imagem")
-       som     explicação do som deste tema */
+  /* ====== Themes ======
+     Each theme = one card. Fields:
+       id      page address (#id), no spaces or accents, unique
+       name    card title
+       src     image file, inside img/
+       credit  text shown over the image and on the card. Replace with 'NASA SVS · ID 00000'
+       crop    (optional) [x, y, width, height] as fractions from 0 to 1, to cut a legend or date out of the image
+       preset  scale, tempo (bpm) and echo of the theme
+       desc    image description (screen reader and the "Image description" button)
+       sound   explanation of this theme's sound */
   var ORDER = [
     {
-      id: 'aerossois', nome: 'Aerossóis',
-      src: 'img/geos.png', credito: 'NASA https://svs.gsfc.nasa.gov/5669/',
+      id: 'aerosols', name: 'Aerosols',
+      src: 'img/geos.png', credit: 'NASA https://svs.gsfc.nasa.gov/5669/',
       preset: { root: 45, scale: SC.minor, bpm: 100, reverb: 0.5 },
-      desc: 'Mapa-múndi sobre fundo escuro. Redemoinhos verde-neon se enrolam sobre os oceanos e a Ásia. Uma larga faixa lilás e branca cruza o Atlântico e o Norte da África, e manchas laranja e vermelhas aparecem na África central. As luzes das cidades pontilham a América do Norte e a Europa, e um redemoinho em espiral surge sobre o Atlântico.',
-      som: 'Escala menor natural, andamento rápido e muito eco. A melodia segue a região mais clara de cada trecho do mapa, como o verde-neon e a faixa lilás; os oceanos escuros ficam em segundo plano.'
+      desc: 'World map on a dark background. Neon-green swirls curl over the oceans and Asia. A wide lilac and white band crosses the Atlantic and North Africa, and orange and red patches appear in central Africa. City lights dot North America and Europe, and a spiral swirl appears over the Atlantic.',
+      sound: 'Natural minor scale, fast tempo and lots of echo. The melody follows the brightest region of each stretch of the map, such as the neon green and the lilac band; the dark oceans stay in the background.'
     },
     {
-      id: 'oceano', nome: 'Cor do oceano',
-      src: 'img/ocean.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/5690/', crop: [0, 0, 1, 0.885],
+      id: 'ocean-color', name: 'Ocean color',
+      src: 'img/ocean.jpg', credit: 'NASA https://svs.gsfc.nasa.gov/5690/', crop: [0, 0, 1, 0.885],
       preset: { root: 46, scale: SC.sus, bpm: 66, reverb: 0.6 },
-      desc: 'Mapa-múndi com os continentes em cinza e o oceano pintado por uma escala que vai do azul-marinho ao amarelo. As águas profundas, no centro dos oceanos, são azul-escuras. As regiões costeiras e as próximas dos polos aparecem em verde e amarelo. A Antártida é uma mancha clara na parte de baixo.',
-      som: 'Escala suspensa, lenta e espaçosa. Os continentes claros e as faixas amarelas da costa puxam a melodia para cima; o oceano profundo, escuro, fica no grave. A legenda e a data da imagem original foram cortadas para não virarem notas.'
+      desc: 'World map with the continents in gray and the ocean painted on a scale that runs from navy blue to yellow. Deep waters, in the middle of the oceans, are dark blue. Coastal regions and areas near the poles appear in green and yellow. Antarctica is a light patch at the bottom.',
+      sound: 'Suspended scale, slow and spacious. The light continents and the yellow coastal bands pull the melody up; the dark deep ocean stays low. The legend and date of the original image were cropped out so they would not turn into notes.'
     },
     {
-      id: 'gelo-polar', nome: 'Gelo polar',
-      src: 'img/polar.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/13577/',
+      id: 'polar-ice', name: 'Polar ice',
+      src: 'img/polar.jpg', credit: 'NASA https://svs.gsfc.nasa.gov/13577/',
       preset: { root: 52, scale: SC.lydian, bpm: 62, reverb: 0.65 },
-      desc: 'Vista aérea de uma geleira. A superfície de gelo branco-azulada é cheia de rachaduras e ondulações que se curvam em arcos, cortada por faixas escuras de rocha e sedimento. Ao fundo, colinas marrons e um céu claro e esfumaçado.',
-      som: 'Escala lídia, lenta e cristalina, com bastante eco. A melodia sobe e desce acompanhando as ondulações do gelo e as faixas escuras de rocha.'
+      desc: 'Aerial view of a glacier. The bluish-white ice surface is full of cracks and ripples that curve into arcs, cut by dark bands of rock and sediment. In the background, brown hills and a pale, hazy sky.',
+      sound: 'Lydian scale, slow and crystalline, with plenty of echo. The melody rises and falls with the ripples in the ice and the dark bands of rock.'
     },
     {
-      id: 'agricultura', nome: 'Agricultura',
-      src: 'img/agriculture.webp', credito: 'NASA https://earth.gov/themes/agriculture',
+      id: 'agriculture', name: 'Agriculture',
+      src: 'img/agriculture.webp', credit: 'NASA https://earth.gov/themes/agriculture',
       preset: { root: 50, scale: SC.majorPent, bpm: 96, reverb: 0.25 },
-      desc: 'Vista de satélite de campos agrícolas. Dezenas de círculos verde-escuros, feitos pela irrigação em pivô central, se misturam a quadrados e retângulos em verde-claro, cinza e bege. A imagem é escura e muito larga.',
-      som: 'Escala pentatônica maior e ritmo animado. Os campos verdes soam como marimba, com notas curtas; os campos claros soam mais brilhantes.'
+      desc: 'Satellite view of farmland. Dozens of dark green circles, made by center-pivot irrigation, mix with light green, gray and beige squares and rectangles. The image is dark and very wide.',
+      sound: 'Major pentatonic scale and an upbeat rhythm. The green fields sound like a marimba, with short notes; the light fields sound brighter.'
     },
     {
-      id: 'correntes-oceanicas', nome: 'Correntes oceânicas',
-      src: 'img/perpetualocean.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/5425/',
+      id: 'ocean-currents', name: 'Ocean currents',
+      src: 'img/perpetualocean.jpg', credit: 'NASA https://svs.gsfc.nasa.gov/5425/',
       preset: { root: 50, scale: SC.lydian, bpm: 70, reverb: 0.55 },
-      desc: 'A Terra vista do espaço, centrada nas Américas, sobre fundo preto. Os oceanos são azuis e cobertos por milhares de linhas brancas finas que mostram as correntes marítimas, com muitos redemoinhos. Uma faixa branca mais forte, a Corrente do Golfo, sai do Golfo do México e segue pelo Atlântico Norte. Os continentes aparecem em verde e marrom, e o Canadá está coberto de neve.',
-      som: 'Escala lídia, fluida e com bastante eco. As laterais pretas da imagem ficam quase em silêncio, e o som cresce quando a varredura entra no globo. As linhas brancas das correntes, mais claras, guiam a melodia.'
+      desc: 'Earth seen from space, centered on the Americas, on a black background. The oceans are blue and covered with thousands of thin white lines showing ocean currents, with many eddies. A stronger white band, the Gulf Stream, leaves the Gulf of Mexico and runs across the North Atlantic. The continents appear in green and brown, and Canada is covered in snow.',
+      sound: 'Lydian scale, flowing and with plenty of echo. The black sides of the image stay almost silent, and the sound grows when the sweep enters the globe. The white current lines, being the brightest, guide the melody.'
     },
     {
-      id: 'aurora', nome: 'Aurora',
-      src: 'img/aurora.jpg', credito: 'NASA https://svs.gsfc.nasa.gov/12523/',
+      id: 'aurora', name: 'Aurora',
+      src: 'img/aurora.jpg', credit: 'NASA https://svs.gsfc.nasa.gov/12523/',
       preset: { root: 43, scale: SC.sus, bpm: 56, reverb: 0.7 },
-      desc: 'Céu noturno com uma grande faixa de luz verde da aurora atravessando a imagem na diagonal, sobre um fundo azul-escuro e preto cheio de estrelas. No chão aparecem neve, antenas, um poste e a lateral de um carro.',
-      som: 'Escala suspensa, bem lenta e com muito eco. A luz verde toca com notas curtas de marimba, e o céu escuro fica em silêncio relativo.'
+      desc: 'Night sky with a large band of green aurora light crossing the image diagonally, over a dark blue and black background full of stars. On the ground there is snow, antennas, a pole and the side of a car.',
+      sound: 'Suspended scale, very slow and with lots of echo. The green light plays short marimba notes, and the dark sky stays relatively quiet.'
     }
   ];
   var themes = {};
@@ -105,7 +105,7 @@
     ctx.drawImage(src, (w - dw) / 2, (h - dh) / 2, dw, dh);
   }
 
-  /* ====== Análise: imagem → lista de notas ====== */
+  /* ====== Analysis: image → list of notes ====== */
   function analyze(src, aspect, preset) {
     var W = N * 4, H = Math.min(420, Math.max(48, Math.round(W / aspect)));
     var cv = document.createElement('canvas');
@@ -148,7 +148,7 @@
 
     var len = preset.scale.length, notes = [], prev = null;
     cols.forEach(function (k, ci) {
-      var rest = k.lum < 0.04; // trecho quase preto (fundo do espaço): vira pausa, sem nota
+      var rest = k.lum < 0.04; // almost black stretch (space background): becomes a rest, no note
       var step = ROWS - 1 - k.band;
       if (rest) step = prev !== null ? prev : Math.floor(ROWS / 2);
       else {
@@ -173,7 +173,7 @@
     return notes;
   }
 
-  /* ====== Áudio (Web Audio API) ====== */
+  /* ====== Audio (Web Audio API) ====== */
   var ac = null, bus = null, previewId = null, previewTimer = 0;
   function ensureAudio() {
     if (!ac) { var AC = window.AudioContext || window.webkitAudioContext; ac = new AC(); }
@@ -253,7 +253,7 @@
 
   /* ====== Home: cards ====== */
   var grid = $('grid');
-  /* Carrega a imagem do campo src (e aplica o recorte, se houver). */
+  /* Loads the image from the src field (and applies the crop, if any). */
   function loadReal(t) {
     var im = new Image();
     im.onload = function () {
@@ -266,14 +266,14 @@
       }
       t.canvas = src; t.real = true; t.pvNotes = null;
       var p = t.el && t.el.querySelector('.lab p');
-      if (p) p.textContent = t.credito || 'NASA';
+      if (p) p.textContent = t.credit || 'NASA';
       drawThumb(t);
       if (cur.theme === t && !viewCard.hidden) { layoutCard(); updateCredit(); }
     };
     im.onerror = function () {
-      console.error('Imagem não encontrada: ' + t.src + '. Confira o nome do arquivo na pasta img/.');
+      console.error('Image not found: ' + t.src + '. Check the file name in the img/ folder.');
       var p = t.el && t.el.querySelector('.lab p');
-      if (p) p.textContent = 'Imagem não encontrada';
+      if (p) p.textContent = 'Image not found';
     };
     im.src = t.src;
   }
@@ -292,18 +292,18 @@
     var el = document.createElement('article');
     el.className = 'card';
     el.innerHTML = '<canvas width="360" height="480" aria-hidden="true"></canvas><div class="shade"></div>' +
-      '<span class="chip"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M1.8 8h12.4M8 1.8c2 2 2 10.4 0 12.4M8 1.8c-2 2-2 10.4 0 12.4" stroke="currentColor" stroke-width="1.1"/></svg>Tema da Terra</span>' +
+      '<span class="chip"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.2" stroke="currentColor" stroke-width="1.3"/><path d="M1.8 8h12.4M8 1.8c2 2 2 10.4 0 12.4M8 1.8c-2 2-2 10.4 0 12.4" stroke="currentColor" stroke-width="1.1"/></svg>Earth theme</span>' +
       '<button class="pv" type="button" aria-pressed="false">' + ICON_PV + '</button>' +
       '<div class="lab"><h3></h3><p></p></div>' +
       '<a class="card-link" href="#"></a>';
-    el.querySelector('h3').textContent = t.nome;
-    el.querySelector('.lab p').textContent = 'Carregando imagem…';
+    el.querySelector('h3').textContent = t.name;
+    el.querySelector('.lab p').textContent = 'Loading image…';
     var a = el.querySelector('.card-link');
     a.setAttribute('href', '#' + t.id);
-    a.setAttribute('aria-label', 'Abrir ' + t.nome);
+    a.setAttribute('aria-label', 'Open ' + t.name);
     a.addEventListener('click', function () { autoplayNext = true; ensureAudio(); });
     var pv = el.querySelector('.pv');
-    pv.setAttribute('aria-label', 'Ouvir prévia: ' + t.nome);
+    pv.setAttribute('aria-label', 'Play preview: ' + t.name);
     pv.addEventListener('click', function () { togglePreview(t); });
     t.el = el; t.pv = pv;
     grid.appendChild(el);
@@ -315,7 +315,7 @@
       var on = previewId === id;
       t.pv.setAttribute('aria-pressed', on ? 'true' : 'false');
       t.pv.innerHTML = on ? ICON_STOP : ICON_PV;
-      t.pv.setAttribute('aria-label', (on ? 'Parar prévia: ' : 'Ouvir prévia: ') + t.nome);
+      t.pv.setAttribute('aria-label', (on ? 'Stop preview: ' : 'Play preview: ') + t.name);
     });
   }
   function togglePreview(t) {
@@ -334,7 +334,7 @@
 
   ORDER.forEach(function (t) { buildCard(t); });
 
-  /* ====== Carrossel: 3 cards por página (2 ou 1 em telas estreitas) ====== */
+  /* ====== Carousel: 3 cards per page (2 or 1 on narrow screens) ====== */
   var carousel = $('carousel');
   var cs = { page: 0, pv: 3, pages: 1 };
   function perView() {
@@ -380,7 +380,7 @@
     setTimeout(function () { stagger(i + 1); }, 16);
   })(0);
 
-  /* ====== Página do card: player ====== */
+  /* ====== Card page: player ====== */
   var viewHome = $('view-home'), viewCard = $('view-card'), imgwrap = $('imgwrap');
   var imgCv = $('img'), fx = $('fx'), rollCv = $('roll');
   var cur = { theme: null, notes: [] };
@@ -395,7 +395,7 @@
   function setPlayUI() {
     var b = $('play');
     b.innerHTML = P.playing ? ICON_PAUSE : ICON_PLAY;
-    b.setAttribute('aria-label', P.playing ? 'Pausar' : 'Tocar');
+    b.setAttribute('aria-label', P.playing ? 'Pause' : 'Play');
   }
   function haltPlayer() {
     if (P.playing) { P.pos = currentBeat(); P.playing = false; cancelAnimationFrame(P.raf); stopAudio(); setPlayUI(); }
@@ -408,14 +408,14 @@
     P.startBeat = beat; P.t0 = ac.currentTime + 0.06; P.playing = true;
     schedule(cur.notes, th.preset, beat, TOTAL, P.speed, P.t0);
     setPlayUI();
-    live('Tocando ' + th.nome + '.');
+    live('Playing ' + th.name + '.');
     cancelAnimationFrame(P.raf);
     P.raf = requestAnimationFrame(tick);
   }
   function pause() {
     P.pos = currentBeat(); P.playing = false;
     cancelAnimationFrame(P.raf); stopAudio(); setPlayUI(); drawAll(P.pos);
-    live('Pausado.');
+    live('Paused.');
   }
   function toggle() {
     if (P.playing) { pause(); return; }
@@ -431,7 +431,7 @@
     if (beat >= TOTAL + TAIL) {
       if (P.loop) { playFrom(0); return; }
       P.playing = false; P.pos = 0; stopAudio(); setPlayUI(); P.lastCol = -2; drawAll(TOTAL);
-      live('Fim.');
+      live('End.');
       return;
     }
     drawAll(beat);
@@ -439,24 +439,24 @@
   }
 
   function describeNote(n) {
-    if (n.rest) return 'Pausa · trecho preto da imagem, sem nota';
-    var b = n.vel < 0.5 ? 'trecho escuro' : (n.vel < 0.78 ? 'luminosidade média' : 'trecho claro');
-    var k = n.kind === 'pluck' ? 'verde, som de marimba' : (n.kind === 'bright' ? 'tons quentes, som brilhante' : 'tons frios, som suave');
-    var p = n.step < 5 ? 'nota grave' : (n.step < 10 ? 'nota média' : 'nota aguda');
-    return midiName(n.midi) + ' · ' + b + ', ' + k + ' · ' + p + (n.hmidi !== null ? ' · textura densa, 2 vozes' : '');
+    if (n.rest) return 'Rest · black stretch of the image, no note';
+    var b = n.vel < 0.5 ? 'dark stretch' : (n.vel < 0.78 ? 'medium brightness' : 'bright stretch');
+    var k = n.kind === 'pluck' ? 'green, marimba sound' : (n.kind === 'bright' ? 'warm tones, bright sound' : 'cool tones, soft sound');
+    var p = n.step < 5 ? 'low note' : (n.step < 10 ? 'mid note' : 'high note');
+    return midiName(n.midi) + ' · ' + b + ', ' + k + ' · ' + p + (n.hmidi !== null ? ' · dense texture, 2 voices' : '');
   }
   function updateCaption(beat) {
     var col = beat >= TOTAL ? N : Math.floor(beat / BPC);
     if (col === P.lastCol) return;
     P.lastCol = col;
     var el = $('caption');
-    if (cur.error) { el.textContent = 'Não foi possível ler os pixels desta imagem. Abra o site por um servidor local (python -m http.server na pasta do projeto) em vez de abrir o arquivo com duplo clique.'; return; }
-    if (!P.playing && beat <= 0) el.textContent = 'Toque ▶ para ouvir. A linha dourada percorre a imagem e cada ponto é uma nota.';
-    else if (col >= N) el.textContent = 'Fim da imagem.';
+    if (cur.error) { el.textContent = 'Could not read the pixels of this image. Open the site through a local server (python -m http.server in the project folder) instead of double-clicking the file.'; return; }
+    if (!P.playing && beat <= 0) el.textContent = 'Press ▶ to listen. The golden line sweeps across the image and each point is a note.';
+    else if (col >= N) el.textContent = 'End of the image.';
     else el.textContent = describeNote(cur.notes[col]);
   }
 
-  /* ---- desenho: linha de varredura sobre a imagem ---- */
+  /* ---- drawing: sweep line over the image ---- */
   function drawFx(beat) {
     var W = fx.width / dpr, H = fx.height / dpr, ctx = fx.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -492,7 +492,7 @@
     }
   }
 
-  /* ---- desenho: piano roll ---- */
+  /* ---- drawing: piano roll ---- */
   var RL = 38, RR = 8, RT = 6, RB = 6;
   function rrect(ctx, x, y, w, h, r) {
     if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); } else { ctx.beginPath(); ctx.rect(x, y, w, h); }
@@ -561,20 +561,20 @@
   }
 
   function updateCredit() {
-    var t = cur.theme, el = $('c-credit'), on = !!(t && t.real && t.credito);
-    el.textContent = on ? 'Imagem: ' + t.credito : '';
+    var t = cur.theme, el = $('c-credit'), on = !!(t && t.real && t.credit);
+    el.textContent = on ? 'Image: ' + t.credit : '';
     el.hidden = !on;
   }
   function openCard(t) {
     stopAudio(); haltPlayer();
     cur.theme = t; P.pos = 0; P.lastCol = -2;
     viewHome.hidden = true; viewCard.hidden = false;
-    $('c-title').textContent = t.nome;
+    $('c-title').textContent = t.name;
     $('c-desc').textContent = t.desc;
-    $('c-sound').textContent = t.som;
+    $('c-sound').textContent = t.sound;
     imgCv.setAttribute('aria-label', t.desc);
     updateCredit();
-    document.title = t.nome + ' · Jukebox da Terra';
+    document.title = t.name + ' · Earth Jukebox';
     setPlayUI();
     layoutCard();
     var go = autoplayNext; autoplayNext = false;
@@ -584,25 +584,25 @@
     if (cur.theme) haltPlayer();
     stopAudio();
     viewCard.hidden = true; viewHome.hidden = false;
-    document.title = 'Jukebox da Terra';
+    document.title = 'Earth Jukebox';
   }
   function route() {
-    var h = decodeURIComponent((location.hash || '').slice(1)) || 'inicio';
+    var h = decodeURIComponent((location.hash || '').slice(1)) || 'home';
     if (themes[h]) { openCard(themes[h]); return; }
     showHome();
-    var how = h === 'como-funciona';
-    $('page-inicio').hidden = how;
-    $('page-como').hidden = !how;
+    var how = h === 'how-it-works';
+    $('page-home').hidden = how;
+    $('page-how').hidden = !how;
     document.querySelectorAll('.nav a').forEach(function (a) {
-      if (a.getAttribute('href') === (how ? '#como-funciona' : '#inicio')) a.setAttribute('aria-current', 'page');
+      if (a.getAttribute('href') === (how ? '#how-it-works' : '#home')) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    if (how) document.title = 'Como funciona · Jukebox da Terra';
+    if (how) document.title = 'How it works · Earth Jukebox';
     window.scrollTo(0, 0);
   }
   window.addEventListener('hashchange', route);
 
-  /* ====== Controles ====== */
+  /* ====== Controls ====== */
   $('play').addEventListener('click', toggle);
   document.querySelectorAll('.seg').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -621,7 +621,7 @@
   document.addEventListener('keydown', function (ev) {
     if (viewCard.hidden) return;
     var tag = ev.target && ev.target.tagName;
-    if (ev.key === 'Escape') { location.hash = '#inicio'; return; }
+    if (ev.key === 'Escape') { location.hash = '#home'; return; }
     if (ev.key === ' ' && tag !== 'BUTTON' && tag !== 'INPUT' && tag !== 'SUMMARY' && tag !== 'A') { ev.preventDefault(); toggle(); }
     else if (ev.key === 'ArrowRight' && tag !== 'INPUT') { seek(currentBeat() + 2); }
     else if (ev.key === 'ArrowLeft' && tag !== 'INPUT') { seek(currentBeat() - 2); }

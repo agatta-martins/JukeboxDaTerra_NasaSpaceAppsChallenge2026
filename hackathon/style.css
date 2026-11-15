@@ -1,11 +1,11 @@
-/* Reset que a plataforma de artefatos injetava; necessário fora dela */
+/* Reset the artifact platform used to inject; needed outside it */
 *,*::before,*::after{box-sizing:border-box}
 html{color-scheme:dark}
 body{margin:0}
 img{max-width:100%}
 [hidden]{display:none!important}
 
-/* Layout: home = barra lateral fixa + grade de cards (como no desenho); card = imagem em largura total com a faixa do piano roll embaixo. */
+/* Layout: home = fixed sidebar + card grid (as in the sketch); card = full-width image with the piano roll strip below. */
 :root{
   --bg:#070b0f;
   --surface:#0e151b;
@@ -81,7 +81,7 @@ button{font:inherit;color:inherit}
 .tbl th{font:600 11.5px var(--font-display);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--surface)}
 .tbl td:first-child{font-weight:600;white-space:nowrap}
 
-/* ---------- Página do card ---------- */
+/* ---------- Card page ---------- */
 #view-card{
   position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;background:var(--bg);
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
@@ -112,8 +112,9 @@ button{font:inherit;color:inherit}
   background:var(--surface);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px;
   padding:10px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));
 }
-.caption{display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline;font-size:14px;min-height:22px}
-.caption b{font:600 11px var(--font-display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+.caption{font-size:14px;line-height:1.45;height:2.9em;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+/* fixed height (2 lines): if the caption grew and shrank with each note, the image area would resize and the image would jump */
+.caption b{font:600 11px var(--font-display);letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-right:10px}
 .caption span{min-width:0}
 #roll{width:100%;height:clamp(110px,22vh,190px);display:block;border-radius:6px;background:var(--surface-2);cursor:pointer;touch-action:none}
 .controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
@@ -140,4 +141,65 @@ button{font:inherit;color:inherit}
 @media (prefers-reduced-motion:reduce){
   .card canvas,.track{transition:none}
   .card:hover canvas{transform:none}
+}
+
+/* ---------- Responsive: phones, tablets and touch screens ---------- */
+
+/* Touch screens: bigger targets for fingers (at least 44px) and no hover zoom */
+@media (pointer:coarse){
+  .seg{min-width:52px;height:44px}
+  .pg{width:48px;height:48px}
+  .pv{width:46px;height:46px}
+  .back,.desc summary{padding:11px 16px}
+  .tog{min-height:44px}
+  .tog input{width:22px;height:22px}
+  .nav a{padding:11px 12px}
+}
+@media (hover:none){
+  .card:hover canvas{transform:none}
+}
+
+/* Phones (portrait) */
+@media (max-width:520px){
+  body{font-size:14.5px}
+  .shell{padding-block:14px 40px}
+  .hero{padding-block:4px 20px}
+  .hero p{font-size:15px}
+  /* card shorter than 3:4 so the title and the arrows fit on screen */
+  .card{aspect-ratio:4/5;max-height:62vh}
+  .lab h3{font-size:18px}
+  /* "How it works" table: each row becomes a small block, no sideways scrolling */
+  .tbl{overflow:visible}
+  .tbl table{min-width:0}
+  .tbl thead{display:none}
+  .tbl tr{display:block;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .tbl tr:last-child{border-bottom:0}
+  .tbl td{display:block;padding:0;border:0;white-space:normal}
+  .tbl td:first-child{white-space:normal;margin-bottom:4px}
+  .tbl td:last-child{color:var(--muted)}
+  /* card page: lighter top bar so it covers less of the image */
+  .top{padding:10px max(12px,env(safe-area-inset-right,0px)) 28px max(12px,env(safe-area-inset-left,0px));gap:8px 10px}
+  .ttl .chip{display:none}
+  .ttl h2{font-size:22px}
+  .back,.desc summary{font-size:13.5px}
+  .credit{font-size:11px;bottom:6px}
+  .panel{padding:8px max(12px,env(safe-area-inset-right,0px)) 10px max(12px,env(safe-area-inset-left,0px))}
+  .caption{font-size:13.5px}
+  .controls{gap:8px 12px}
+  .grp .lbl{display:none}
+}
+
+/* Short screens (phone lying sideways): keep the image visible */
+@media (max-height:520px){
+  .top{padding:8px max(12px,env(safe-area-inset-right,0px)) 20px max(12px,env(safe-area-inset-left,0px));gap:6px 10px}
+  .ttl{flex-direction:row;align-items:center;gap:10px}
+  .ttl .chip{display:none}
+  .ttl h2{font-size:20px}
+  .back,.desc summary{padding:7px 12px;font-size:13px}
+  .panel{gap:6px;padding-top:6px;padding-bottom:6px}
+  .caption{font-size:13px;height:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  #roll{height:64px}
+  .play{width:42px;height:42px}
+  .seg{height:38px}
+  .tog{min-height:38px}
 }
