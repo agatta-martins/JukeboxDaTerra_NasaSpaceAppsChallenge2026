@@ -47,14 +47,14 @@
       id: 'aerosols', name: 'Aerosols',
       src: 'img/geos.png', credit: 'NASA https://svs.gsfc.nasa.gov/5669/',
       preset: { root: 45, scale: SC.minor, bpm: 100, reverb: 0.5 },
-      desc: 'World map on a dark background. Neon-green swirls curl over the oceans and Asia. A wide lilac and white band crosses the Atlantic and North Africa, and orange and red patches appear in central Africa. City lights dot North America and Europe, and a spiral swirl appears over the Atlantic.',
+      desc: 'World map on a dark background showing aerosols, tiny particles floating in the air. Each color is a different kind of particle: green is pollution and volcanic particles (sulfates), lilac is desert dust, orange and red is smoke from fires, and blue-white is sea salt. Neon-green swirls curl over the oceans and Asia. A wide lilac band of dust from the Sahara crosses North Africa and the Atlantic, and orange and red smoke patches appear in central Africa. Blue-white swirls of sea salt fill the southern oceans. City lights dot North America and Europe, and a spiral swirl appears over the Atlantic.',
       sound: 'Natural minor scale, fast tempo and lots of echo. The melody follows the brightest region of each stretch of the map, such as the neon green and the lilac band; the dark oceans stay in the background.'
     },
     {
       id: 'ocean-color', name: 'Ocean color',
       src: 'img/ocean.jpg', credit: 'NASA https://svs.gsfc.nasa.gov/5690/', crop: [0, 0, 1, 0.885],
       preset: { root: 46, scale: SC.sus, bpm: 66, reverb: 0.6 },
-      desc: 'World map with the continents in gray and the ocean painted on a scale that runs from navy blue to yellow. Deep waters, in the middle of the oceans, are dark blue. Coastal regions and areas near the poles appear in green and yellow. Antarctica is a light patch at the bottom.',
+      desc: 'World map with the continents in gray and the ocean painted on a scale that runs from navy blue to yellow. The color shows phytoplankton, tiny algae that float in the ocean: blue means few phytoplankton, green and yellow mean more. Deep waters, in the middle of the oceans, are dark blue. Coastal regions and areas near the poles appear in green and yellow. Antarctica and sea ice are a light patch at the bottom.',
       sound: 'Suspended scale, slow and spacious. The gray continents and the yellow coastal bands pull the melody up; the dark deep ocean stays low. The legend and date of the original image were cropped out so they would not turn into notes.'
     },
     {
